@@ -24,6 +24,12 @@ public class FilterTaskAuth extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        var servletPath = request.getServletPath();
+        if (!servletPath.startsWith("/tasks")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
         String authEncoded = authHeader.substring("Basic".length()).trim();
@@ -39,7 +45,7 @@ public class FilterTaskAuth extends OncePerRequestFilter {
         var user = this.userRepository.findByEmail(email);
 
         if (user == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.sendError(401, "Credentials Invalid");
             return;
         } else {
             BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), user.getPassword());
@@ -47,7 +53,7 @@ public class FilterTaskAuth extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
 
             } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.sendError(401, "Credentials Invalid");
                 return;
             }
         }
