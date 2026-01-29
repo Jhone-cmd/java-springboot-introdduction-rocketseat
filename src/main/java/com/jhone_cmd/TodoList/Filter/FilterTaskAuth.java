@@ -3,20 +3,34 @@ package com.jhone_cmd.TodoList.Filter;
 import java.io.IOException;
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class FilterTaskAuth implements Filter {
+public class FilterTaskAuth extends OncePerRequestFilter {
 
     @Override
-    public void doFilter(ServletRequest arg0, ServletResponse arg1, FilterChain arg2)
-            throws IOException, ServletException {
-        System.out.println("FilterTaskAuth executed");
-    }
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
+        String authHeader = request.getHeader("Authorization");
+
+        String authEncoded = authHeader.substring("Basic".length()).trim();
+
+        byte[] authDecoded = java.util.Base64.getDecoder().decode(authEncoded);
+
+        String authString = new String(authDecoded);
+        String[] authParts = authString.split(":");
+
+        String email = authParts[0];
+        String password = authParts[1];
+
+        System.out.println(email);
+        System.out.println(password);
+
+    }
 }
