@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,14 +35,14 @@ public class TaskController {
         var currentDate = LocalDateTime.now();
 
         if (currentDate.isAfter(taskModel.getStartAt()) || currentDate.isAfter(taskModel.getEndAt())) {
-            return ResponseEntity.status(400).body("Task is not in the correct time range");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Task is not in the correct time range");
         }
 
         if (taskModel.getStartAt().isAfter(taskModel.getEndAt())) {
-            return ResponseEntity.status(400).body("Task start time must be before end time");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Task start time must be before end time");
         }
 
-        return ResponseEntity.status(201).body(task);
+        return ResponseEntity.status(HttpStatus.CREATED).body(task);
     }
 
     @GetMapping("/")
@@ -57,12 +58,18 @@ public class TaskController {
         var task = taskRepository.findById(id).orElse(null);
 
         if (task == null) {
-            return ResponseEntity.status(404).body("Task not found");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Task not found");
+        }
+
+        var idUser = request.getAttribute("idUser");
+
+        if (!task.getIdUser().equals(idUser)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You are not authorized to update this task");
         }
 
         Utils.copyNullProperties(taskModel, task);
 
         var taskUpdated = taskRepository.save(task);
-        return ResponseEntity.status(200).body(taskUpdated);
+        return ResponseEntity.status(HttpStatus.OK).body(taskUpdated);
     }
 }
