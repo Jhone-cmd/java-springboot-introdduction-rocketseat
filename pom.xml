@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.jhone-cmd</groupId>
 	<artifactId>TodoList</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<name>TodoList</name>
 	<description>Task Manager</description>
 	<url/>
